@@ -1,6 +1,7 @@
+logsBucket: gs://msds-cloud-build-logs
+
 options:
   logging: CLOUD_LOGGING_ONLY
-  logsBucket: gs://msds-cloud-build-logs
   
 steps:
 # Steps to pull a docker image for pgadmin, push it to container registry and deploy it to cloud run.
