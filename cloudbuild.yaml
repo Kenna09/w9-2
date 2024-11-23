@@ -1,5 +1,3 @@
-logsBucket: gs://msds-cloud-build-logs
-
 options:
   logging: CLOUD_LOGGING_ONLY
   
