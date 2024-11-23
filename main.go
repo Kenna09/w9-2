@@ -314,7 +314,7 @@ func main() {
 
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	name := os.Getenv("PROJECT_ID")
+	name := os.Getenv("msds432-wk9-2")
 	if name == "" {
 		name = "CBI-Project"
 	}
@@ -340,7 +340,7 @@ func GetTaxiTrips(db *sql.DB) {
 	// Get your geocoder.ApiKey from here :
 	// https://developers.google.com/maps/documentation/geocoding/get-api-key?authuser=2
 
-	geocoder.ApiKey = "ADD_YOUR_API_KEY_HERE"
+	geocoder.ApiKey = "AIzaSyBrXM5Gd0NEgdAl0qIaDAg8u-dhz7USlhg"
 
 	drop_table := `drop table if exists taxi_trips`
 	_, err := db.Exec(drop_table)
