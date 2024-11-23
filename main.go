@@ -224,7 +224,7 @@ func init() {
 
 	//Option 4
 	//Database application running on Google Cloud Platform.
-	db_connection := "user=postgres dbname=chicago_business_intelligence password=root host=thematic-scope-442522-n4:us-central1:mypostgres sslmode=disable port = 5432"
+	db_connection := "user=postgres dbname=chicago_business_intelligence password=root host=msds432-wk9-2:us-central1:mypostgres sslmode=disable port = 5432"
 	// thematic-scope-442522-n4:us-central1:mypostgres
 
 
