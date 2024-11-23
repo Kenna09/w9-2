@@ -34,3 +34,5 @@ steps:
 images:
   - us-central1-docker.pkg.dev/msds432-wk9-2/gcr-repo/go-microservice
   - us-central1-docker.pkg.dev/msds432-wk9-2/gcr-repo/pgadmin
+
+
