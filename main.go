@@ -418,11 +418,19 @@ func GetTaxiTrips(db *sql.DB) {
 	var taxi_trips_list_2 TaxiTripsJsonRecords
 	json.Unmarshal(body_2, &taxi_trips_list_2)
 
+	fmt.Println(" Taxi Trips 1111  ")
+
+
 	s := fmt.Sprintf("\n\n Transportation-Network-Providers-Trips number of SODA records received = %d\n\n", len(taxi_trips_list_2))
 	io.WriteString(os.Stdout, s)
 
+	fmt.Println(" Taxi Trips 2222  ")
 
 	// Add the Taxi medallions list & rideshare companies like Uber/Lyft list
+	fmt.Println("taxi_trips_list_1")
+	fmt.Println(taxi_trips_list_1)
+	fmt.Println("taxi_trips_list_2")
+	fmt.Println(taxi_trips_list_2)
 
 	taxi_trips_list := append(taxi_trips_list_1, taxi_trips_list_2...)
 
@@ -430,6 +438,7 @@ func GetTaxiTrips(db *sql.DB) {
 	// Process the list
 
 	for i := 0; i < len(taxi_trips_list); i++ {
+		fmt.Println(" Taxi Trips for loop start ~~~  ")
 
 		// We will execute defensive coding to check for messy/dirty/missing data values
 		// There are different methods to deal with messy/dirty/missing data.
@@ -479,6 +488,9 @@ func GetTaxiTrips(db *sql.DB) {
 		if dropoff_centroid_longitude == "" {
 			continue
 		}
+
+		fmt.Println(" Taxi Trips for loop mid ~~~  ")
+
 
 		// Using pickup_centroid_latitude and pickup_centroid_longitude in geocoder.GeocodingReverse
 		// we could find the pickup zip-code
@@ -530,6 +542,7 @@ func GetTaxiTrips(db *sql.DB) {
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println(" Taxi Trips for loop end ~~~  ")
 
 	}
 
