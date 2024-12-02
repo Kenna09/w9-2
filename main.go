@@ -490,7 +490,6 @@ func GetTaxiTrips(db *sql.DB) {
 	// Process the list
 
 	for i := 0; i < len(taxi_trips_list); i++ {
-		fmt.Println(" Taxi Trips for loop start ~~~  ")
 
 		// We will execute defensive coding to check for messy/dirty/missing data values
 		// There are different methods to deal with messy/dirty/missing data.
@@ -541,7 +540,6 @@ func GetTaxiTrips(db *sql.DB) {
 			continue
 		}
 
-		fmt.Println(" Taxi Trips for loop mid ~~~  ")
 
 		pickup_centroid_latitude_float, _ := strconv.ParseFloat(pickup_centroid_latitude, 64)
 		pickup_centroid_longitude_float, _ := strconv.ParseFloat(pickup_centroid_longitude, 64)
@@ -622,6 +620,7 @@ func GetTaxiTrips(db *sql.DB) {
 
 		sql := `INSERT INTO taxi_trips ("trip_id", "trip_start_timestamp", "trip_end_timestamp", "pickup_centroid_latitude", "pickup_centroid_longitude", "dropoff_centroid_latitude", "dropoff_centroid_longitude", "pickup_zip_code", 
 			"dropoff_zip_code") values($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+		fmt.Println(sql)
 
 		_, err = db.Exec(
 			sql,
@@ -638,10 +637,8 @@ func GetTaxiTrips(db *sql.DB) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(" Taxi Trips for loop end ~~~  ")
 
 	}
-
 	fmt.Println("Completed Inserting Rows into the TaxiTrips Table")
 
 }
