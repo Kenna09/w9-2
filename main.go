@@ -276,8 +276,8 @@ func main() {
 		// build and fine-tune the functions to pull data from the different data sources
 		// The following code snippets show you how to pull data from different data sources
 
-		go GetCommunityAreaUnemployment(db)
-		go GetBuildingPermits(db)
+		// go GetCommunityAreaUnemployment(db)
+		// go GetBuildingPermits(db)
 		// go GetTaxiTrips(db) // comment out bc it doesnt work properly to load database, plus to reduce geocode API calls while testing and rebuilding
 
 		// go GetCovidDetails(db)
