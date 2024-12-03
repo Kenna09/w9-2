@@ -61,7 +61,7 @@ const port = process.env.PORT || 8081;
 
 // Set up PostgreSQL connection using Cloud SQL socket
 const client = new Client({
-  host: '/cloudsql/msds432-wk9-2:us-central1:mypostgres', // Cloud SQL connection string
+  host: '/msds432-wk9-2:us-central1:mypostgres', // Cloud SQL connection string
   user: 'postgres',  // Database username
   password: 'root',  // Database password
   database: 'mypostgres', // Database name
