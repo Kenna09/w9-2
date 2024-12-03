@@ -83,7 +83,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const app = express();
-const port = 3000;
+const port = 8081;
 
 // Configure the PostgreSQL client
 const pool = new Pool({
