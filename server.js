@@ -1,16 +1,3 @@
-// const express = require('express');
-// const app = express();
-// const port = process.env.PORT || 8081;
-
-// app.get('/', (req, res) => {
-//   res.send('Hello from Google Cloud Run!');
-// });
-
-// app.listen(port, () => {
-//   console.log(`Server running at http://localhost:${port}`);
-// });
-
-
 const express = require('express');
 const { Pool } = require('pg'); // Import the pg library to work with PostgreSQL
 const app = express();
@@ -29,12 +16,12 @@ const pool = new Pool({
 app.get('/', async (req, res) => {
   try {
     // Query the table public.community_area_unemployment
-    const result = await pool.query('SELECT area_name, unemployment_rate FROM public.community_area_unemployment');
+    const result = await pool.query('SELECT birth_rate, unemployment FROM public.community_area_unemployment');
     
     // Format the result as a string
-    let responseText = "Community Area Unemployment Data:\n\n";
+    let responseText = "Community Area Unemployment and birth_rate Data:\n\n";
     result.rows.forEach(row => {
-      responseText += `Area: ${row.area_name}, Unemployment Rate: ${row.unemployment_rate}%\n`;
+      responseText += `Area: ${row.birth_rate}, Unemployment Rate: ${row.unemployment}%\n`;
     });
 
     // Send the result as the response
