@@ -47,7 +47,7 @@ steps:
     - '8081'
     - '--allow-unauthenticated'
     - '--set-env-vars'
-    - 'DB_HOST=msds432-wk9-2:us-central1:mypostgres' 
+    - 'DB_HOST=/cloudsql/msds432-wk9-2:us-central1:mypostgres' 
     - '--set-env-vars'
     - 'DB_PORT=5432' 
     - '--set-env-vars'
