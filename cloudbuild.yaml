@@ -32,7 +32,8 @@ steps:
 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: gcloud
- # Step to deploy to Cloud Run with environment variables
+
+
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
