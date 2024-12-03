@@ -1,5 +1,6 @@
 package main
 
+
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 //
@@ -79,12 +80,11 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
-	"regexp"
 	"os"
 	"strconv"
 	"time"
-	// "github.com/kelvins/geocoder"
+
+	"github.com/kelvins/geocoder"
 	_ "github.com/lib/pq"
 )
 
@@ -195,12 +195,6 @@ type CCVIJsonRecords []struct {
 	CCVI_category              string `json:"ccvi_category"`
 }
 
-type OpenCageResponse struct {
-	Results []struct {
-		Formatted string `json:"formatted"`
-	} `json:"results"`
-}
-
 
 // Declare my database connection
 var db *sql.DB
@@ -231,8 +225,6 @@ func init() {
 	//Option 4
 	//Database application running on Google Cloud Platform.
 	db_connection := "user=postgres dbname=chicago_business_intelligence password=root host=/cloudsql/msds432-wk9-2:us-central1:mypostgres sslmode=disable port = 5432"
-	// thematic-scope-442522-n4:us-central1:mypostgres
-
 
 	db, err = sql.Open("postgres", db_connection)
 	if err != nil {
@@ -319,52 +311,8 @@ func main() {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
-func reverseGeocode(lat, lng, apiKey string) (string, error) {
-	baseURL := "https://api.opencagedata.com/geocode/v1/json"
-	params := url.Values{}
-	params.Set("q", fmt.Sprintf("%s,%s", lat, lng))
-	params.Set("key", apiKey)
-
-	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
-
-	resp, err := http.Get(fullURL)
-	if err != nil {
-		return "", fmt.Errorf("failed to send request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	var ocResponse OpenCageResponse
-	if err := json.NewDecoder(resp.Body).Decode(&ocResponse); err != nil {
-		return "", fmt.Errorf("failed to parse response: %v", err)
-	}
-
-	if len(ocResponse.Results) == 0 {
-		return "", fmt.Errorf("no address found for the given coordinates")
-	}
-
-	return ocResponse.Results[0].Formatted, nil
-}
-
-func extractZipCode(address string) (string, error) {
-	// Define a regex pattern to match US ZIP codes (5 digits)
-	zipCodePattern := `\b\d{5}(?:-\d{4})?\b`
-	re := regexp.MustCompile(zipCodePattern)
-
-	// Find the first match for the ZIP code
-	zipCode := re.FindString(address)
-	if zipCode == "" {
-		return "", fmt.Errorf("no ZIP code found in the address")
-	}
-
-	return zipCode, nil
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-
-
 func handler(w http.ResponseWriter, r *http.Request) {
-	name := os.Getenv("msds432-wk9-2")
+	name := os.Getenv("PROJECT_ID")
 	if name == "" {
 		name = "CBI-Project"
 	}
@@ -390,9 +338,8 @@ func GetTaxiTrips(db *sql.DB) {
 	// Get your geocoder.ApiKey from here :
 	// https://developers.google.com/maps/documentation/geocoding/get-api-key?authuser=2
 
-	// geocoder.ApiKey = "AIzaSyBrXM5Gd0NEgdAl0qIaDAg8u-dhz7USlhg"
-	
-	apiKey := "96fe293252e144579ada4943fcd95bba" // Replace with your opencage API key
+	geocoder.ApiKey = "AIzaSyB5KyymBT0jhkZfaVSNXHltjsK4LaqJv0M"
+
 	drop_table := `drop table if exists taxi_trips`
 	_, err := db.Exec(drop_table)
 	if err != nil {
@@ -470,19 +417,11 @@ func GetTaxiTrips(db *sql.DB) {
 	var taxi_trips_list_2 TaxiTripsJsonRecords
 	json.Unmarshal(body_2, &taxi_trips_list_2)
 
-	fmt.Println(" Taxi Trips 1111  ")
-
-
 	s := fmt.Sprintf("\n\n Transportation-Network-Providers-Trips number of SODA records received = %d\n\n", len(taxi_trips_list_2))
 	io.WriteString(os.Stdout, s)
 
-	fmt.Println(" Taxi Trips 2222  ")
 
 	// Add the Taxi medallions list & rideshare companies like Uber/Lyft list
-	fmt.Println("taxi_trips_list_1")
-	fmt.Println(taxi_trips_list_1)
-	fmt.Println("taxi_trips_list_2")
-	fmt.Println(taxi_trips_list_2)
 
 	taxi_trips_list := append(taxi_trips_list_1, taxi_trips_list_2...)
 
@@ -540,87 +479,40 @@ func GetTaxiTrips(db *sql.DB) {
 			continue
 		}
 
+		// Using pickup_centroid_latitude and pickup_centroid_longitude in geocoder.GeocodingReverse
+		// we could find the pickup zip-code
 
 		pickup_centroid_latitude_float, _ := strconv.ParseFloat(pickup_centroid_latitude, 64)
 		pickup_centroid_longitude_float, _ := strconv.ParseFloat(pickup_centroid_longitude, 64)
-
-		latitude := pickup_centroid_latitude_float
-		longitude := pickup_centroid_longitude_float
-
-		// FormatFloat parameters: value, format ('f' for decimal), precision, and bitSize (64 for float64)
-		latitudeStr := strconv.FormatFloat(latitude, 'f', 6, 64) // 6 decimal places
-		longitudeStr := strconv.FormatFloat(longitude, 'f', 6, 64)
-
-		address, err := reverseGeocode(latitudeStr, longitudeStr, apiKey)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
+		pickup_location := geocoder.Location{
+			Latitude:  pickup_centroid_latitude_float,
+			Longitude: pickup_centroid_longitude_float,
 		}
-	
-		fmt.Printf("Address: %s\n", address)
-	
-		pickup_zip_code, err := extractZipCode(address)
-		fmt.Printf("zipCode: %s\n", pickup_zip_code)
 
+		// Comment the following line while not unit-testing
+		fmt.Println(pickup_location)
+
+		pickup_address_list, _ := geocoder.GeocodingReverse(pickup_location)
+		pickup_address := pickup_address_list[0]
+		pickup_zip_code := pickup_address.PostalCode
+
+		// Using dropoff_centroid_latitude and dropoff_centroid_longitude in geocoder.GeocodingReverse
+		// we could find the dropoff zip-code
 
 		dropoff_centroid_latitude_float, _ := strconv.ParseFloat(dropoff_centroid_latitude, 64)
 		dropoff_centroid_longitude_float, _ := strconv.ParseFloat(dropoff_centroid_longitude, 64)
 
-		dropoff_latitude := dropoff_centroid_latitude_float
-		dropoff_longitude := dropoff_centroid_longitude_float
-
-		// FormatFloat parameters: value, format ('f' for decimal), precision, and bitSize (64 for float64)
-		dropoff_latitudeStr := strconv.FormatFloat(dropoff_latitude, 'f', 6, 64) // 6 decimal places
-		dropoff_longitudeStr := strconv.FormatFloat(dropoff_longitude, 'f', 6, 64)
-
-		dropoff_address, err := reverseGeocode(dropoff_latitudeStr, dropoff_longitudeStr, apiKey)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
+		dropoff_location := geocoder.Location{
+			Latitude:  dropoff_centroid_latitude_float,
+			Longitude: dropoff_centroid_longitude_float,
 		}
-	
-		fmt.Printf("dropoff_address: %s\n", dropoff_address)
-	
-		dropoff_zip_code, err := extractZipCode(address)
-		fmt.Printf("dropoff_zip_code: %s\n", dropoff_zip_code)
-		
 
-
-		// Using pickup_centroid_latitude and pickup_centroid_longitude in geocoder.GeocodingReverse
-		// we could find the pickup zip-code
-
-		// pickup_centroid_latitude_float, _ := strconv.ParseFloat(pickup_centroid_latitude, 64)
-		// pickup_centroid_longitude_float, _ := strconv.ParseFloat(pickup_centroid_longitude, 64)
-		// pickup_location := geocoder.Location{
-		// 	Latitude:  pickup_centroid_latitude_float,
-		// 	Longitude: pickup_centroid_longitude_float,
-		// }
-
-		// // Comment the following line while not unit-testing
-		// fmt.Println(pickup_location)
-
-		// pickup_address_list, _ := geocoder.GeocodingReverse(pickup_location)
-		// pickup_address := pickup_address_list[0]
-		// pickup_zip_code := pickup_address.PostalCode
-
-		// // Using dropoff_centroid_latitude and dropoff_centroid_longitude in geocoder.GeocodingReverse
-		// // we could find the dropoff zip-code
-
-		// dropoff_centroid_latitude_float, _ := strconv.ParseFloat(dropoff_centroid_latitude, 64)
-		// dropoff_centroid_longitude_float, _ := strconv.ParseFloat(dropoff_centroid_longitude, 64)
-
-		// dropoff_location := geocoder.Location{
-		// 	Latitude:  dropoff_centroid_latitude_float,
-		// 	Longitude: dropoff_centroid_longitude_float,
-		// }
-
-		// dropoff_address_list, _ := geocoder.GeocodingReverse(dropoff_location)
-		// dropoff_address := dropoff_address_list[0]
-		// dropoff_zip_code := dropoff_address.PostalCode
+		dropoff_address_list, _ := geocoder.GeocodingReverse(dropoff_location)
+		dropoff_address := dropoff_address_list[0]
+		dropoff_zip_code := dropoff_address.PostalCode
 
 		sql := `INSERT INTO taxi_trips ("trip_id", "trip_start_timestamp", "trip_end_timestamp", "pickup_centroid_latitude", "pickup_centroid_longitude", "dropoff_centroid_latitude", "dropoff_centroid_longitude", "pickup_zip_code", 
 			"dropoff_zip_code") values($1, $2, $3, $4, $5, $6, $7, $8, $9)`
-		fmt.Println(sql)
 
 		_, err = db.Exec(
 			sql,
@@ -639,6 +531,7 @@ func GetTaxiTrips(db *sql.DB) {
 		}
 
 	}
+
 	fmt.Println("Completed Inserting Rows into the TaxiTrips Table")
 
 }
