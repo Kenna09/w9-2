@@ -278,7 +278,7 @@ func main() {
 
 		go GetCommunityAreaUnemployment(db)
 		go GetBuildingPermits(db)
-		go GetTaxiTrips(db)
+		// go GetTaxiTrips(db) // comment out bc it doesnt work properly to load database, plus to reduce geocode API calls while testing and rebuilding
 
 		// go GetCovidDetails(db)
 		// go GetCCVIDetails(db)
