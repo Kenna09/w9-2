@@ -32,8 +32,32 @@ steps:
 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: gcloud
-  args: ['run', 'deploy', 'nodejs-app', '--image', 'gcr.io/msds432-wk9-2/nodejs-app', '--region', 'us-central1', '--platform', 'managed', '--port', '8081', '--allow-unauthenticated']
-
+ # Step to deploy to Cloud Run with environment variables
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'nodejs-app'
+      - '--image'
+      - 'gcr.io/msds432-wk9-2/nodejs-app'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--port'
+      - '8081'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'DB_HOST=msds432-wk9-2:us-central1:mypostgres' 
+      - '--set-env-vars'
+      - 'DB_PORT=5432' 
+      - '--set-env-vars'
+      - 'DB_USER=postgres'  
+      - '--set-env-vars'
+      - 'DB_PASSWORD=root'
+      - '--set-env-vars'
+      - 'DB_NAME=mypostgres'
 images:
 - gcr.io/msds432-wk9-2/go-microservice
 - gcr.io/msds432-wk9-2/pgadmin
